@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audio</title>
+</head>
+<body>
+    <audio id="music" src="" hidden loop></audio>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script>
+    $(function () {
+        const audioPlayer = $('#music').get(0);  
+        let id = undefined;                      
+        let volumeIn = 0.02;                  
+        let volumeOut = 0.1;                    
+
+        window.addEventListener('message', function (event) {
+            const e = event.data;  
+
+            
+            if (e.action === 'play') {
+                audioPlayer.src = `sounds/${e.name}`; 
+                audioPlayer.volume = 0.0; 
+                audioPlayer.play();
+
+                if (id) {
+                    clearInterval(id);
+                }
+
+                id = setInterval(() => {
+                    if (audioPlayer.volume < e.volume) {
+                        audioPlayer.volume = Math.min(e.volume, audioPlayer.volume + volumeIn);
+                    }
+                    
+                    if (audioPlayer.volume >= e.volume) {
+                        clearInterval(id);  
+                    }
+                }, 100);
+            } 
+            else if (e.action === 'stop') {
+                if (id) {
+                    clearInterval(id); 
+                }
+                id = setInterval(() => {
+                    if (audioPlayer.volume > 0) {
+                        audioPlayer.volume = Math.max(0, audioPlayer.volume - volumeOut);
+                    }
+                    if (audioPlayer.volume <= 0) {
+                        audioPlayer.pause();  
+                        clearInterval(id); 
+                    }
+                }, 100);
+            }
+        });
+    });
+    </script>
+</body>
+</html>
